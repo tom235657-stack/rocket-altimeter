@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4F1EA">
+<title>Высотомер ROCKET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F4F1EA; --ink:#1B1B18; --muted:#5C5A52; --soft:#3D3B35; --card:#FFFFFF; --line:#E2DDD0; --grid:#ECE8DD;
+  --accent:#C2410C; --accent-soft:#FBE4D8; --accent-ink:#9A3412;
+  --ok:#2F7D4F; --ok-soft:#E3EFE6; --ok-ink:#1F5E3A;
+  --warn-soft:#FDF0D5; --warn-ink:#7A4F00; --bad:#A3261B;
+  --dark:#1B1B18; --dark-ink:#F4F1EA; --dark-muted:#CFCBBF;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+.app{max-width:460px;margin:0 auto;min-height:100vh;padding:max(16px,env(safe-area-inset-top)) 16px calc(92px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.h1{font-size:22px;font-weight:600}
+.sub{font-size:13px;color:var(--muted)}
+.right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:500;background:#ECE8DD;color:var(--muted);white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:#9A968A}
+.pill.on{background:var(--ok-soft);color:var(--ok-ink)} .pill.on i{background:var(--ok)}
+.pill.fly{background:var(--accent-soft);color:var(--accent-ink);font-weight:600} .pill.fly i{background:var(--accent)}
+.pill.retry{background:var(--warn-soft);color:var(--warn-ink)} .pill.retry i{background:#C98A00}
+.batt{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-family:var(--mono)}
+.banner{padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--warn-ink);font-size:14px}
+.view{display:flex;flex-direction:column;gap:14px}
+[hidden]{display:none !important}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.dark{background:var(--dark);color:var(--dark-ink);border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:4px}
+.dark .lbl{font-size:14px;color:var(--dark-muted);display:flex;align-items:center;gap:8px}
+.dark .note{font-size:13px;color:var(--dark-muted)}
+.big{display:flex;align-items:baseline;gap:8px}
+.big b{font-family:var(--mono);font-size:72px;font-weight:600;line-height:1;letter-spacing:-2px}
+.big span{font-size:26px;font-weight:500}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block;flex:none}
+.ready-status{font-size:15px;font-weight:600;color:#A9DDB9;display:flex;align-items:center;gap:8px}
+.ready-status .dot{background:#4CB873}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat small{font-size:13px;color:var(--muted)}
+.stat b{font-family:var(--mono);font-size:24px;font-weight:600;white-space:nowrap}
+.stat .txt{font-size:15px;font-weight:500}
+.grid3 .stat{padding:12px}
+.grid3 .stat b{font-size:20px}
+.stat.inv{background:var(--dark);color:var(--dark-ink);border-color:var(--dark)} .stat.inv small{color:var(--dark-muted)}
+.btn{height:52px;border-radius:14px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:inherit;font-size:16px;font-weight:600;cursor:pointer;padding:0 16px;width:100%}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.small{height:44px;font-size:15px;font-weight:500}
+.btn.link{border:none;height:44px;font-weight:500;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.hold{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:62px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.hold .fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0) * 100%);background:rgba(0,0,0,.24);pointer-events:none}
+.btn.hold:not(.primary) .fill{background:rgba(27,27,24,.12)}
+.hold .lbl,.hold .hsub{position:relative;pointer-events:none}
+.hold .hsub{font-size:12px;font-weight:500;opacity:.85}
+.ready-status.off{color:var(--dark-muted)} .ready-status.off .dot{background:#9A968A}
+.ready-status.retry{color:#F2C46B} .ready-status.retry .dot{background:#C98A00}
+.hint{font-size:13px;color:var(--muted);text-align:center;margin:0}
+.hint.left{text-align:left}
+.chart-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:14px;font-weight:500}
+.chart-head span{font-size:12px;color:var(--muted);font-weight:400}
+.chart{padding:12px 12px 8px}
+.chart svg{display:block;width:100%;height:auto}
+svg .grid{stroke:var(--grid);stroke-width:1}
+svg .ax{fill:var(--muted);font:11px var(--mono)}
+svg .ln{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+svg .apo{fill:var(--accent)}
+svg .apoline{stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3}
+svg .apot{fill:var(--ink);font:600 12px var(--mono)}
+svg .empty{fill:var(--muted);font:13px var(--sans)}
+.badge{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:500}
+.badge.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.badge.wait{background:var(--warn-soft);color:var(--warn-ink)}
+.badge.live{background:var(--accent-soft);color:var(--accent-ink)}
+.form{display:flex;flex-direction:column;gap:10px}
+.form h3{margin:0;font-size:15px;font-weight:600}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.chip{height:44px;border-radius:10px;border:1px solid var(--line);background:transparent;font:inherit;font-size:15px;font-weight:500;color:var(--ink);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.f input,.f textarea{border:1px solid var(--line);border-radius:10px;padding:0 12px;height:44px;font:inherit;font-size:16px;color:var(--ink);background:#fff;width:100%}
+.f textarea{height:auto;padding:10px 12px;resize:vertical;min-height:72px}
+.row-head{display:flex;align-items:center;gap:12px}
+.back{width:44px;height:44px;border:1px solid var(--ink);border-radius:12px;background:transparent;display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+.two-one{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;text-align:left;font:inherit;color:var(--ink);width:100%;cursor:pointer}
+.item .l{display:flex;flex-direction:column;gap:3px;min-width:0}
+.item .t{font-size:16px;font-weight:500}
+.item .m{font-size:13px;color:var(--muted)}
+.item .c{font-size:13px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.item .a{font-family:var(--mono);font-size:20px;font-weight:600}
+.item .s{font-size:12px;font-weight:500}
+.s.ok{color:var(--ok-ink)} .s.live{color:var(--accent-ink)}
+.center{display:flex;flex-direction:column;align-items:center;gap:14px}
+.center h2{margin:0;font-size:20px;font-weight:600}
+.center ol{margin:0;padding-left:22px;align-self:stretch;display:flex;flex-direction:column;gap:8px;font-size:15px;color:var(--soft)}
+.icon-c{width:80px;height:80px;border-radius:50%;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.warn{background:var(--warn-soft);color:var(--warn-ink);border-radius:12px;padding:12px;font-size:14px;margin:0}
+.info{font-size:14px;color:var(--soft);margin:4px 0 12px}
+.card h3{margin:0;font-size:16px;font-weight:600}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));width:calc(100% - 32px);max-width:428px;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 18px rgba(27,27,24,.08)}
+.tab{height:44px;border-radius:12px;border:none;background:transparent;font:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer}
+.tab[aria-current=page]{background:var(--ink);color:var(--bg)}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;width:max-content;max-width:calc(100% - 32px);text-align:center;z-index:5}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="top">
+  <div>
+    <div class="h1">Высотомер</div>
+    <div class="sub" id="hSub">ракета на водяной тяге</div>
+  </div>
+  <div class="right">
+    <div class="pill" id="pill" role="status"><i></i><span id="pillText">Нет подключения</span></div>
+    <div class="batt" id="batt" hidden>
+      <svg width="22" height="12" viewBox="0 0 22 12" fill="none" stroke="#5C5A52" stroke-width="1.5" aria-hidden="true"><rect x="1" y="1" width="17" height="10" rx="2"/><line x1="20.5" y1="4" x2="20.5" y2="8"/><rect id="battFill" x="3" y="3" width="13" height="6" rx="1" fill="#2F7D4F" stroke="none"/></svg>
+      <span id="battText">—</span>
+    </div>
+  </div>
+</header>
+<div class="banner" id="banner" hidden></div>
+
+<!-- ========== Полёт: подключение, калибровка, старт ========== -->
+<section class="view" id="v-ready">
+  <div class="dark">
+    <div class="ready-status off" id="rStatus"><span class="dot"></span><span id="rStatusText">Нет подключения</span></div>
+    <div class="lbl" style="margin-top:6px">Высота сейчас</div>
+    <div class="big"><b id="rAlt">—</b><span>м</span></div>
+    <div class="note" id="rCal">подключите плату</div>
+  </div>
+  <div class="card">
+    <h3>Калибровка</h3>
+    <p class="info">Поставьте ракету на стартовый стол и перед накачкой удерживайте кнопку 3 секунды. Текущая высота станет нулём.</p>
+    <button class="btn primary hold" id="btnCal"><span class="fill"></span><span class="lbl">Откалибровать</span><span class="hsub">удерживайте 3 с</span></button>
+  </div>
+  <div class="grid2">
+    <div class="stat"><small>Старт</small><span class="txt">сам, при подъёме выше 2 м</span></div>
+    <div class="stat"><small>Приземление</small><span class="txt">высота не меняется 3 с</span></div>
+  </div>
+  <p class="hint" id="syncLine" hidden></p>
+  <button class="btn small" id="btnDemoLaunch" hidden>Демо: запустить ракету</button>
+  <p class="warn" id="noBt" hidden>Этот браузер не поддерживает Bluetooth. Откройте страницу в Chrome на Android по адресу https://. Демо-режим работает и без Bluetooth.</p>
+  <p class="hint" id="connHint">Включите плату, а на телефоне Bluetooth и геолокацию</p>
+  <button class="btn primary hold" id="btnLink"><span class="fill"></span><span class="lbl">Подключиться к ROCKET</span><span class="hsub">удерживайте 3 с</span></button>
+  <button class="btn link" id="btnDemo">Демо-режим без платы</button>
+</section>
+
+<!-- ========== Полёт ========== -->
+<section class="view" id="v-live" hidden>
+  <div class="dark">
+    <div class="lbl"><span class="dot"></span><span>Апогей</span></div>
+    <div class="big"><b id="lApo">0,0</b><span>м</span></div>
+    <div class="note" id="lApoT">набор высоты…</div>
+  </div>
+  <div class="grid2">
+    <div class="stat"><small>Сейчас</small><b id="lNow">0,0 м</b></div>
+    <div class="stat"><small>Время полёта</small><b id="lTime">0,0 с</b></div>
+  </div>
+  <div class="card chart">
+    <div class="chart-head">Высота, м<span>время, с · живые данные</span></div>
+    <svg id="liveChart" viewBox="0 0 342 206" role="img" aria-label="График высоты в прямом эфире"></svg>
+  </div>
+  <p class="hint left">Плата параллельно пишет полёт в память. После приземления данные сверятся автоматически.</p>
+</section>
+
+<!-- ========== Запуск ========== -->
+<section class="view" id="v-detail" hidden>
+  <div class="row-head">
+    <button class="back" id="dBack" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#1B1B18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="11,3 5,9 11,15"/></svg></button>
+    <div>
+      <div class="h1" id="dTitle">Запуск</div>
+      <div class="sub" id="dDate"></div>
+    </div>
+  </div>
+  <div class="badge" id="dBadge"></div>
+  <button class="btn small" id="dSync" hidden>Сверить с платой</button>
+  <div class="grid3">
+    <div class="stat inv"><small>Апогей</small><b id="dApo">—</b></div>
+    <div class="stat"><small>До апогея</small><b id="dApoT">—</b></div>
+    <div class="stat"><small>Весь полёт</small><b id="dDur">—</b></div>
+  </div>
+  <div class="card chart">
+    <div class="chart-head">Высота, м<span>время, с</span></div>
+    <svg id="dChart" viewBox="0 0 342 206" role="img" aria-label="График полёта"></svg>
+  </div>
+  <div class="card form">
+    <h3>Условия и комментарий</h3>
+    <div class="chips" role="group" aria-label="Бутылка">
+      <button class="chip" data-b="0,5" aria-pressed="false">0,5 л</button>
+      <button class="chip" data-b="1" aria-pressed="false">1 л</button>
+      <button class="chip" data-b="1,5" aria-pressed="false">1,5 л</button>
+      <button class="chip" data-b="2" aria-pressed="false">2 л</button>
+    </div>
+    <div class="grid2" style="gap:8px">
+      <label class="f">Давление, бар<input id="fP" inputmode="decimal" autocomplete="off"></label>
+      <label class="f">Вода, мл<input id="fW" inputmode="numeric" autocomplete="off"></label>
+    </div>
+    <label class="f">Комментарий<textarea id="fC" rows="2"></textarea></label>
+  </div>
+  <div class="two-one">
+    <button class="btn primary" id="dSave">Сохранить</button>
+    <button class="btn" id="dCsv">CSV</button>
+  </div>
+  <button class="btn link danger" id="dDel">Удалить из журнала</button>
+</section>
+
+<!-- ========== Журнал ========== -->
+<section class="view" id="v-log" hidden>
+  <div class="dark" id="recCard" style="flex-direction:row;justify-content:space-between;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div class="lbl">Рекорд</div>
+      <div class="big"><b id="recVal" style="font-size:40px">0</b><span style="font-size:18px">м</span></div>
+    </div>
+    <div class="note" id="recMeta" style="text-align:right"></div>
+  </div>
+  <p class="hint" id="logEmpty">Запусков пока нет. Подключите плату или попробуйте демо-режим.</p>
+  <div class="list" id="logList"></div>
+  <div class="card">
+    <h3>Память платы</h3>
+    <p class="info" id="boardInfo">Плата хранит последние 100 запусков. Подключите её, чтобы загрузить записи.</p>
+    <button class="btn small" id="btnBoardAll" disabled>Загрузить все записи с платы</button>
+  </div>
+  <div class="grid2">
+    <button class="btn small" id="btnCsvAll">Журнал в CSV</button>
+    <button class="btn small" id="btnBackup">Резервная копия</button>
+  </div>
+  <button class="btn link" id="btnRestore">Восстановить из копии</button>
+  <input type="file" id="fileRestore" accept="application/json,.json" hidden>
+</section>
+
+<nav class="tabs" aria-label="Разделы">
+  <button class="tab" data-tab="fly" aria-current="page">Полёт</button>
+  <button class="tab" data-tab="log">Журнал</button>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Высотомер ROCKET — приложение для Chrome (Web Bluetooth)
+   Модули: bus (события) · BleLink/DemoLink (связь) · cmd (запросы)
+           handlers (протокол) · store (журнал, IndexedDB) · sync (сверка)
+           UI (экраны). Новый датчик = новый обработчик в handlers.
+   ===================================================================== */
+
+const UUID = {
+  svc: '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
+  rx:  '6e400002-b5a3-f393-e0a9-e50e24dcca9e',
+  tx:  '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
+};
+const BLOCK = 40;                 // точек в блоке синхронизации (как в прошивке)
+const LAND_WINDOW_S = 3;          // окно определения приземления
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const num1 = x => (Math.round(x * 10) / 10).toFixed(1).replace('.', ',');
+const sum16 = arr => { let s = 0; for (const v of arr) s = (s + ((v | 0) & 0xFFFF)) & 0xFFFF; return s; };
+const vibrate = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+
+/* ---------- События ---------- */
+const bus = {
+  h: {},
+  on(t, f) { (this.h[t] = this.h[t] || []).push(f); return () => { this.h[t] = this.h[t].filter(x => x !== f); }; },
+  emit(t, ...a) { (this.h[t] || []).slice().forEach(f => { try { f(...a); } catch (e) { console.error(e); } }); }
+};
+
+/* ---------- Связь по Bluetooth ---------- */
+class BleLink {
+  constructor() { this.device = null; this.rx = null; this.buf = ''; this.manual = false; this.dec = new TextDecoder(); }
+  async connect() {
+    if (!navigator.bluetooth) throw new Error('Bluetooth недоступен в этом браузере');
+    this.device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [UUID.svc] }, { namePrefix: 'ROCKET' }],
+      optionalServices: [UUID.svc]
+    });
+    this.device.addEventListener('gattserverdisconnected', () => this.onDisc());
+    await this.open();
+  }
+  async open() {
+    const server = await this.device.gatt.connect();
+    const svc = await server.getPrimaryService(UUID.svc);
+    this.rx = await svc.getCharacteristic(UUID.rx);
+    const tx = await svc.getCharacteristic(UUID.tx);
+    this.onValue = this.onValue || (e => this.onData(e.target.value));
+    tx.removeEventListener('characteristicvaluechanged', this.onValue);   // без дублей после переподключения
+    tx.addEventListener('characteristicvaluechanged', this.onValue);
+    await tx.startNotifications();
+    this.buf = '';
+    bus.emit('link', 'up');
+  }
+  onData(dv) {
+    this.buf += this.dec.decode(dv, { stream: true });
+    let i;
+    while ((i = this.buf.indexOf('\n')) >= 0) {
+      const line = this.buf.slice(0, i).trim();
+      this.buf = this.buf.slice(i + 1);
+      if (line) bus.emit('line', line);
+    }
+    if (this.buf.length > 4000) this.buf = '';
+  }
+  async onDisc() {
+    this.rx = null;
+    if (this.manual) { bus.emit('link', 'closed'); return; }
+    bus.emit('link', 'retry');
+    for (let k = 0; k < 20 && !this.manual; k++) {
+      await sleep(Math.min(800 + k * 400, 4000));
+      try { await this.open(); return; } catch (e) {}
+    }
+    if (!this.manual) bus.emit('link', 'lost');
+  }
+  async send(text) {
+    if (!this.rx) throw new Error('нет связи');
+    await this.rx.writeValue(new TextEncoder().encode(text));
+  }
+  close() {
+    this.manual = true;
+    if (this.device && this.device.gatt.connected) this.device.gatt.disconnect();
+    else bus.emit('link', 'closed');
+  }
+}
+
+/* ---------- Демо-плата: имитирует прошивку, включая потерю пакетов ---------- */
+function simulateFlight() {
+  const dt = 0.05, g = 9.81, k = 0.006, v0 = 25 + Math.random() * 11, s = [];
+  const noise = () => Math.round((Math.random() - 0.5) * 20);
+  for (let i = 0; i < 20; i++) s.push(noise());
+  let h = 0, v = 0, t = 0;
+  for (;;) {
+    t += dt;
+    if (t < 0.15) v += (v0 / 0.15) * dt; else v += (-g - k * v * Math.abs(v)) * dt;
+    h += v * dt;
+    if (h <= 0 && t > 0.3) break;
+    s.push(Math.round(h * 100) + noise());
+  }
+  for (let i = 0; i < 60; i++) s.push(noise());
+  let apo = -1e9, apoIdx = 0;
+  s.forEach((x, i) => { if (x > apo) { apo = x; apoIdx = i; } });
+  return { s, apo, apoIdx };
+}
+
+class DemoLink {
+  constructor() {
+    this.out = Promise.resolve(); this.flights = new Map(); this.nextId = 1; this.state = 0;
+    this.mV = 4080; this.uid = 'demo' + Date.now().toString(36); this.timer = null; this.closed = false;
+  }
+  async connect() { await sleep(500); this.timer = setInterval(() => this.status(), 500); bus.emit('link', 'up'); }
+  emit(line) { this.out = this.out.then(() => sleep(6)).then(() => { if (!this.closed) bus.emit('line', line); }); }
+  status() {
+    if (this.state !== 0) return;
+    this.mV = Math.max(3560, this.mV - 0.3);
+    this.emit(`S,0,${Math.round((Math.random() - 0.5) * 25)},${Math.round(this.mV)},${this.nextId}`);
+  }
+  async send(c) {
+    await sleep(20);
+    const p = c.split(','), id = +p[1];
+    switch (p[0]) {
+      case 'I': this.emit(`HELLO,3.1-demo,2,baro,${Math.round(performance.now() / 1000)},${this.uid}`); break;
+      case 'C': if (this.state) this.emit('ERR,busy,C'); else setTimeout(() => this.emit('CAL,101325'), 1800); break;
+      case 'Q':
+        for (const f of this.flights.values()) this.emit(`LIST,${f.id},${f.s.length},${f.apo},${f.unix}`);
+        this.emit(`LISTEND,${this.flights.size}`); break;
+      case 'H': {
+        const f = this.flights.get(id);
+        this.emit(f ? `F,${id},${f.s.length},20,20,${f.apo},${f.apoIdx},${sum16(f.s)},${f.unix}` : `ERR,nofile,${id}`); break;
+      }
+      case 'G': {
+        const f = this.flights.get(id);
+        if (!f) { this.emit(`ERR,nofile,${id}`); break; }
+        if (Math.random() < 0.05) break;                       // имитация потерянного ответа
+        const v = f.s.slice(+p[2], +p[2] + +p[3]);
+        this.emit(`D,${id},${p[2]},${v.join(';')},${sum16(v)}`); break;
+      }
+      case 'X': this.flights.delete(id); this.emit(`DEL,${id}`); break;
+      case 'T': this.emit(`TIME,${p[1]}`); break;
+    }
+  }
+  launch() {
+    if (this.state) return;
+    this.state = 1;
+    const id = this.nextId++, f = simulateFlight(), t0 = performance.now(), unix = Math.floor(Date.now() / 1000);
+    this.emit(`LAUNCH,${id},20,20`);
+    let sent = 0;
+    const iv = setInterval(() => {
+      if (this.closed) { clearInterval(iv); return; }
+      const avail = Math.min(f.s.length, 20 + Math.floor((performance.now() - t0) / 50));
+      while (sent < avail) {
+        const cnt = Math.min(10, avail - sent);
+        if (Math.random() > 0.12) this.emit(`L,${id},${sent},${f.s.slice(sent, sent + cnt).join(';')}`); // ~12% пакетов теряется
+        sent += cnt;
+      }
+      if (sent >= f.s.length) {
+        clearInterval(iv);
+        this.flights.set(id, { id, ...f, unix });
+        this.state = 0;
+        this.emit(`LAND,${id},${f.s.length},${f.apo},${f.apoIdx},20`);
+      }
+    }, 100);
+  }
+  close() { this.closed = true; clearInterval(this.timer); bus.emit('link', 'closed'); }
+}
+
+let link = null;
+const isDemo = () => link instanceof DemoLink;
+
+/* ---------- Запросы к плате: по одному, с ожиданием ответа ---------- */
+const cmd = {
+  chain: Promise.resolve(), waiters: [],
+  init() {
+    bus.on('line', line => {
+      const p = line.split(',');
+      for (const w of this.waiters.slice()) {
+        if (w.match(p)) { this.drop(w); clearTimeout(w.t); w.res(p); }
+      }
+    });
+  },
+  drop(w) { const i = this.waiters.indexOf(w); if (i >= 0) this.waiters.splice(i, 1); },
+  request(text, match, timeout = 2500) {
+    const run = () => new Promise((res, rej) => {
+      if (!link) { rej(new Error('нет связи')); return; }
+      const w = { match, res };
+      w.t = setTimeout(() => { this.drop(w); rej(new Error('timeout ' + text)); }, timeout);
+      this.waiters.push(w);
+      link.send(text).catch(e => { clearTimeout(w.t); this.drop(w); rej(e); });
+    });
+    const p = this.chain.then(run, run);
+    this.chain = p.catch(() => {});
+    return p;
+  }
+};
+cmd.init();
+
+async function retry(fn, n = 3) {
+  let err;
+  for (let i = 0; i < n; i++) {
+    try { return await fn(); } catch (e) { err = e; if (!app.connected) break; await sleep(200); }
+  }
+  throw err;
+}
+
+/* ---------- Состояние приложения ---------- */
+const app = {
+  connected: false, linkState: 'off', uid: null, fw: null,
+  boardState: 0, alt: 0, mV: 0, calAt: null, live: null, boardCount: null,
+  tab: 'fly', detailKey: null, detailRec: null,
+  logVer: -1, logCache: [], logRendered: null
+};
+const recKey = id => `${app.uid}-${id}`;
+async function ensureUid() { for (let i = 0; i < 30 && !app.uid; i++) await sleep(100); return app.uid || 'board'; }
+
+/* ---------- Журнал (IndexedDB в телефоне) ---------- */
+const store = {
+  db: null, ver: 0,
+  open() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('rocket-altimeter', 1);
+      r.onupgradeneeded = () => {
+        r.result.createObjectStore('flights', { keyPath: 'key' });
+        r.result.createObjectStore('meta', { keyPath: 'k' });
+      };
+      r.onsuccess = () => { this.db = r.result; res(); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  req(name, mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction(name, mode), q = fn(t.objectStore(name));
+      t.oncomplete = () => res(q ? q.result : undefined);
+      t.onerror = () => rej(t.error);
+    });
+  },
+  get(key) { return this.req('flights', 'readonly', s => s.get(key)); },
+  all() { return this.req('flights', 'readonly', s => s.getAll()); },
+  async put(rec) { await this.req('flights', 'readwrite', s => s.put(rec)); this.ver++; scheduleRender(); },
+  nextNumber() {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction('meta', 'readwrite'), s = t.objectStore('meta'), g = s.get('num');
+      let n;
+      g.onsuccess = () => { n = ((g.result && g.result.v) || 0) + 1; s.put({ k: 'num', v: n }); };
+      t.oncomplete = () => res(n);
+      t.onerror = () => rej(t.error);
+    });
+  },
+  async setNumberAtLeast(n) {
+    await this.req('meta', 'readwrite', s => {
+      const g = s.get('num');
+      g.onsuccess = () => { if (!g.result || g.result.v < n) s.put({ k: 'num', v: n }); };
+      return null;
+    });
+  }
+};
+
+async function newRecord(id, date) {
+  return {
+    key: recKey(id), uid: app.uid, id, num: await store.nextNumber(), date,
+    rate: 20, pre: 20, samples: [], apogeeCm: 0, apogeeIdx: 0, status: 'live',
+    bottle: '', pressure: '', water: '', comment: isDemo() ? 'Демо-полёт' : '', deleted: false
+  };
+}
+
+/* ---------- Сверка с платой ---------- */
+const sync = {
+  queue: [], running: false, cur: null, uid: null, prog: 0, tries: {},
+  add(id) { if (!this.queue.includes(id)) this.queue.push(id); this.run(); },
+  async run() {
+    if (this.running) return;
+    this.running = true;
+    try {
+      while (this.queue.length && app.connected) {
+        if (app.live && app.live.active) { await sleep(1000); continue; }
+        const id = this.queue[0];
+        this.cur = id; this.uid = app.uid; this.prog = 0; scheduleRender();
+        try { await this.one(id); this.queue.shift(); }
+        catch (e) {
+          console.warn('sync', id, e);
+          this.queue.shift();
+          this.tries[id] = (this.tries[id] || 0) + 1;
+          if (this.tries[id] < 3) this.queue.push(id);
+          await sleep(1000);
+        }
+      }
+    } finally { this.running = false; this.cur = null; scheduleRender(); }
+  },
+  async one(id) {
+    const h = await retry(() => cmd.request(`H,${id}`,
+      p => (p[0] === 'F' && +p[1] === id) || (p[0] === 'ERR' && p[2] === String(id))));
+    if (h[0] === 'ERR') return;                       // на плате записи уже нет
+    const n = +h[2], rate = +h[3], pre = +h[4], apo = +h[5], apoIdx = +h[6], total = +h[7], unix = +h[8] || 0;
+    const s = new Array(n);
+    for (let from = 0; from < n; from += BLOCK) {
+      const cnt = Math.min(BLOCK, n - from);
+      const vals = await retry(async () => {
+        const p = await cmd.request(`G,${id},${from},${cnt}`, p => p[0] === 'D' && +p[1] === id && +p[2] === from);
+        const v = (p[3] || '').split(';').filter(x => x !== '').map(Number);
+        if (v.length !== cnt) throw new Error('неполный блок');
+        if (sum16(v) !== +p[4]) throw new Error('контрольная сумма блока');
+        return v;
+      }, 4);
+      for (let i = 0; i < cnt; i++) s[from + i] = vals[i];
+      this.prog = (from + cnt) / n; scheduleRender();
+    }
+    if (sum16(s) !== total) throw new Error('контрольная сумма полёта');
+    let rec = await store.get(recKey(id));
+    if (rec && rec.deleted) return;
+    if (!rec) rec = await newRecord(id, unix ? unix * 1000 : null);
+    const upd = { samples: s, rate, pre, apogeeCm: apo, apogeeIdx: apoIdx, status: 'verified' };
+    if (!rec.date && unix) upd.date = unix * 1000;
+    Object.assign(rec, upd);
+    await store.put(rec);
+    if (app.detailRec && app.detailRec.key === rec.key) Object.assign(app.detailRec, upd);
+  }
+};
+
+/* ---------- Обработчики протокола (сюда добавляются новые датчики) ---------- */
+const handlers = {
+  HELLO(p) { app.fw = p[1]; app.uid = p[5] || 'board'; },
+  S(p) {
+    app.boardState = +p[1]; app.alt = +p[2] / 100; app.mV = +p[3];
+    if (app.boardState === 1 && !app.live) app.live = { id: null, active: true, samples: [], rate: 20, pre: 0, start: Date.now() };
+    if (app.boardState === 0 && app.live && app.live.id === null) app.live = null;
+    scheduleRender();
+  },
+  CAL() { app.calAt = Date.now(); scheduleRender(); },
+  LAUNCH(p) {
+    app.live = { id: +p[1], rate: +p[2] || 20, pre: +p[3] || 0, samples: [], active: true, start: Date.now() };
+    app.detailKey = null; app.detailRec = null; app.tab = 'fly';
+    vibrate(250); scheduleRender();
+  },
+  L(p) {
+    const L = app.live;
+    if (!L || L.id !== +p[1]) return;
+    const from = +p[2];
+    (p[3] || '').split(';').forEach((v, i) => { if (v !== '') L.samples[from + i] = +v; });
+    scheduleRender();
+  },
+  LAND(p) { onLand(p); },
+  SLEEP(p) { toast(p[1] === 'battery' ? 'Плата выключилась: аккумулятор разряжен' : 'Плата уснула: 15 минут без работы'); },
+  ERR(p) { if (p[1] === 'save') toast('Плата не смогла сохранить запись, остались данные эфира'); console.warn('Плата:', p.join(',')); }
+};
+bus.on('line', line => { const p = line.split(','); const h = handlers[p[0]]; if (h) h(p); });
+
+async function onLand(p) {
+  const id = +p[1], n = +p[2];
+  const L = app.live && app.live.id === id ? app.live : null;
+  app.live = null;
+  if (app.boardCount != null) app.boardCount = Math.min(100, app.boardCount + 1);
+  vibrate([120, 80, 120]);
+  await ensureUid();
+  let rec = await store.get(recKey(id));
+  if (!rec) rec = await newRecord(id, L ? L.start : Date.now());
+  if (rec.deleted) return;
+  if (rec.status !== 'verified' && L) {
+    const s = new Array(n).fill(null);
+    L.samples.forEach((v, i) => { if (i < n && v != null) s[i] = v; });
+    rec.samples = s; rec.rate = L.rate; rec.pre = +p[5];
+  }
+  rec.apogeeCm = +p[3]; rec.apogeeIdx = +p[4];
+  await store.put(rec);
+  toast(`Приземление! Апогей ${num1(rec.apogeeCm / 100)} м`);
+  openDetail(rec.key);
+  setTimeout(() => sync.add(id), 300);
+}
+
+/* ---------- Подключение ---------- */
+bus.on('link', st => {
+  if (st === 'up') { onLinkUp(); return; }
+  app.connected = false;
+  if (st === 'retry') app.linkState = 'retry';
+  else {
+    app.linkState = 'off'; app.uid = null; app.live = null; app.mV = 0;
+    keepAwake(false);
+    if (st === 'lost') toast('Связь с платой потеряна');
+  }
+  scheduleRender();
+});
+
+async function onLinkUp() {
+  app.connected = true; app.linkState = 'on';
+  keepAwake(true); scheduleRender();
+  try {
+    await cmd.request('I', p => p[0] === 'HELLO', 3000);
+    try { await cmd.request(`T,${Math.floor(Date.now() / 1000)}`, p => p[0] === 'TIME', 2500); } catch (e) {}
+    await importBoardItems(await fetchBoardList(), false);
+    sync.run();
+  } catch (e) {
+    console.warn(e);
+    toast('Плата не ответила. Проверьте, что залита прошивка 3.1');
+  }
+}
+
+// Список записей в памяти платы (до 100)
+async function fetchBoardList() {
+  const items = [];
+  const off = bus.on('line', l => {
+    const p = l.split(',');
+    if (p[0] === 'LIST') items.push({ id: +p[1], n: +p[2], apo: +p[3], unix: +p[4] || 0 });
+  });
+  try { await cmd.request('Q', p => p[0] === 'LISTEND', 10000); } finally { off(); }
+  app.boardCount = items.length;
+  return items.sort((a, b) => a.id - b.id);
+}
+
+// Добавить записи платы в журнал и поставить несверенные в очередь
+async function importBoardItems(items, includeDeleted) {
+  let queued = 0;
+  for (const it of items) {
+    let rec = await store.get(recKey(it.id));
+    if (rec && rec.deleted) {
+      if (!includeDeleted) continue;
+      rec.deleted = false; await store.put(rec);
+    }
+    if (!rec) {
+      rec = await newRecord(it.id, it.unix ? it.unix * 1000 : null);
+      rec.apogeeCm = it.apo;
+      await store.put(rec);
+    } else if (!rec.date && it.unix) { rec.date = it.unix * 1000; await store.put(rec); }
+    if (rec.status !== 'verified') { sync.tries[it.id] = 0; sync.add(it.id); queued++; }
+  }
+  return queued;
+}
+
+/* ---------- Экран не гаснет, пока подключены ---------- */
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+    if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && app.connected) keepAwake(true); });
+
+/* ---------- График ---------- */
+function niceMax(m) {
+  for (const x of [5, 10, 20, 30, 40, 50, 60, 80, 100, 120, 150, 200, 300]) if (x >= m * 1.08) return x;
+  return Math.ceil(m / 100) * 100;
+}
+function tickStep(span) { return span <= 10 ? 2 : span <= 25 ? 5 : span <= 60 ? 10 : span <= 120 ? 20 : 30; }
+
+function drawChart(svg, samples, rate, pre, apoIdx, minSpan) {
+  const L = 40, R = 332, T = 16, B = 180, n = samples.length;
+  let maxV = 0, any = false;
+  for (let i = 0; i < n; i++) { const v = samples[i]; if (v != null) { any = true; if (v > maxV) maxV = v; } }
+  if (!any) { svg.innerHTML = `<text x="171" y="103" text-anchor="middle" class="empty">Нет данных</text>`; return; }
+  const yMax = niceMax(maxV / 100);
+  const t0 = -pre / rate, t1 = Math.max((n - pre) / rate, minSpan || 6);
+  const X = t => L + (t - t0) / (t1 - t0) * (R - L);
+  const Y = h => B - Math.max(0, Math.min(h, yMax)) / yMax * (B - T);
+  let out = '';
+  for (const v of [0, yMax / 2, yMax]) {
+    out += `<line x1="${L}" y1="${Y(v)}" x2="${R}" y2="${Y(v)}" class="grid"/>`;
+    out += `<text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" class="ax">${String(v).replace('.', ',')}</text>`;
+  }
+  const step = tickStep(t1 - t0);
+  for (let t = 0; t <= t1 + 1e-6; t += step) out += `<text x="${X(t)}" y="${B + 18}" text-anchor="middle" class="ax">${t}</text>`;
+  const stride = Math.max(1, Math.ceil(n / 500));
+  let d = '', pen = false;
+  for (let i = 0; i < n; i += stride) {
+    const v = samples[i];
+    if (v == null) { pen = false; continue; }
+    d += (pen ? 'L' : 'M') + X((i - pre) / rate).toFixed(1) + ' ' + Y(v / 100).toFixed(1) + ' ';
+    pen = true;
+  }
+  out += `<path d="${d}" class="ln"/>`;
+  if (apoIdx != null && samples[apoIdx] != null) {
+    const ax = X((apoIdx - pre) / rate), ay = Y(samples[apoIdx] / 100);
+    out += `<line x1="${ax}" y1="${ay}" x2="${ax}" y2="${B}" class="apoline"/><circle cx="${ax}" cy="${ay}" r="5" class="apo"/>`;
+    out += `<text x="${Math.min(ax + 8, R - 54)}" y="${Math.max(ay - 6, 12)}" class="apot">${num1(samples[apoIdx] / 100)} м</text>`;
+  }
+  svg.innerHTML = out;
+}
+
+/* ---------- Отрисовка ---------- */
+let rq = false;
+function scheduleRender() { if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; render(); }); }
+
+function currentView() {
+  if (app.detailKey) return 'detail';
+  if (app.tab === 'log') return 'log';
+  if (app.live && app.live.active && (app.connected || app.linkState === 'retry')) return 'live';
+  return 'ready';
+}
+
+function agoText(t) {
+  const s = Math.round((Date.now() - t) / 1000);
+  return s < 60 ? `${s} с назад` : `${Math.round(s / 60)} мин назад`;
+}
+function fmtDate(ms) {
+  const d = new Date(ms), z = n => String(n).padStart(2, '0');
+  return { date: `${z(d.getDate())}.${z(d.getMonth() + 1)}.${d.getFullYear()}`, time: `${z(d.getHours())}:${z(d.getMinutes())}` };
+}
+function dateStr(r) {
+  if (!r.date) return 'дата неизвестна';
+  const f = fmtDate(r.date);
+  return `${f.date} ${f.time}`;
+}
+function maxOf(s) { let m = 0; for (const v of s) if (v != null && v > m) m = v; return m; }
+function apoOf(r) { return (r.apogeeCm || maxOf(r.samples || [])) / 100; }
+function durOf(r) { const n = (r.samples || []).length; return n ? Math.max(0, (n - r.pre) / r.rate - LAND_WINDOW_S) : null; }
+
+function render() {
+  const v = currentView();
+  for (const id of ['ready', 'live', 'detail', 'log']) $('v-' + id).hidden = id !== v;
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-current', t.dataset.tab === app.tab ? 'page' : 'false'));
+  $('hSub').textContent = { ready: app.connected ? 'готов к старту' : 'ракета на водяной тяге', live: 'идёт полёт · прямой эфир', detail: 'итог запуска', log: 'журнал запусков' }[v];
+  renderStatus();
+  refreshLog();
+  if (v === 'ready') renderReady();
+  if (v === 'live') renderLive();
+  if (v === 'detail') renderDetail();
+  if (v === 'log') renderLog();
+}
+
+function renderStatus() {
+  const pill = $('pill');
+  let cls = '', txt = 'Нет подключения';
+  if (app.live && app.live.active && (app.connected || app.linkState === 'retry')) { cls = 'fly'; txt = app.connected ? 'В полёте' : 'Переподключение…'; }
+  else if (app.connected) { cls = 'on'; txt = isDemo() ? 'Демо-режим' : 'ROCKET подключена'; }
+  else if (app.linkState === 'retry') { cls = 'retry'; txt = 'Переподключение…'; }
+  pill.className = 'pill ' + cls;
+  $('pillText').textContent = txt;
+  const V = app.mV / 1000;
+  $('batt').hidden = !(app.connected && app.mV > 2500);
+  if (app.mV > 2500) {
+    const lvl = Math.max(0, Math.min(1, (V - 3.3) / 0.9));
+    $('battFill').setAttribute('width', (1 + lvl * 12).toFixed(1));
+    $('battFill').setAttribute('fill', V < 3.5 ? '#A3261B' : '#2F7D4F');
+    $('battText').textContent = V.toFixed(2).replace('.', ',') + ' В';
+  }
+  const low = app.connected && app.mV > 2500 && V < 3.5;
+  $('banner').hidden = !low;
+  if (low) $('banner').textContent = 'Аккумулятор садится: заканчивайте запуски и зарядите его.';
+}
+
+function setHoldLabel(btn, text) {
+  btn.dataset.label = text;
+  if (!btn.dataset.holding) btn.querySelector('.lbl').textContent = text;
+}
+
+function renderReady() {
+  const c = app.connected, retry = !c && app.linkState === 'retry', st = $('rStatus');
+  st.className = 'ready-status' + (c ? '' : retry ? ' retry' : ' off');
+  $('rStatusText').textContent = c ? (app.boardState === 1 ? 'Идёт полёт' : 'Готов к старту') : retry ? 'Переподключение…' : 'Нет подключения';
+  $('rAlt').textContent = c ? num1(app.alt) : '—';
+  $('rCal').textContent = !c ? 'подключите плату' : app.calAt ? `базовый уровень задан ${agoText(app.calAt)}` : 'базовый уровень задан при включении платы';
+  const busyCal = $('btnCal').dataset.busy === '1';
+  $('btnCal').disabled = !c || busyCal || app.boardState === 1;
+  const sl = $('syncLine');
+  if (c && sync.cur != null) { sl.hidden = false; sl.textContent = `Сверка записи с платой… ${Math.round(sync.prog * 100)}%`; }
+  else if (c && sync.queue.length) { sl.hidden = false; sl.textContent = `В очереди на сверку: ${sync.queue.length}`; }
+  else sl.hidden = true;
+  $('btnDemoLaunch').hidden = !(c && isDemo());
+  const bt = !!navigator.bluetooth, on = c || retry;
+  $('noBt').hidden = bt || on;
+  $('connHint').hidden = on;
+  setHoldLabel($('btnLink'), on ? 'Отключиться' : 'Подключиться к ROCKET');
+  $('btnLink').classList.toggle('primary', !on);
+  $('btnLink').disabled = !on && !bt;
+  $('btnDemo').hidden = on;
+}
+
+function renderLive() {
+  const L = app.live, s = L.samples;
+  let cur = null, apo = 0, apoIdx = null;
+  for (let i = 0; i < s.length; i++) { const v = s[i]; if (v == null) continue; cur = v; if (v > apo) { apo = v; apoIdx = i; } }
+  $('lApo').textContent = num1(apo / 100);
+  $('lApoT').textContent = apoIdx != null && apoIdx > L.pre ? `на ${num1((apoIdx - L.pre) / L.rate)} с полёта` : 'набор высоты…';
+  $('lNow').textContent = cur != null ? `${num1(cur / 100)} м` : '—';
+  $('lTime').textContent = `${num1(Math.max(0, (Date.now() - L.start) / 1000))} с`;
+  drawChart($('liveChart'), s, L.rate, L.pre, apoIdx, 6);
+}
+
+function renderDetail() {
+  const r = app.detailRec;
+  if (!r) return;
+  $('dTitle').textContent = `Запуск №${r.num}`;
+  if (r.date) { const f = fmtDate(r.date); $('dDate').textContent = `${f.date} в ${f.time}`; }
+  else $('dDate').textContent = 'дата и время неизвестны';
+  const n = r.samples.length;
+  let lost = 0;
+  for (let i = 0; i < n; i++) if (r.samples[i] == null) lost++;
+  const b = $('dBadge'), syncing = sync.cur === r.id && sync.uid === r.uid;
+  if (r.status === 'verified') { b.className = 'badge ok'; b.textContent = `✓ Сверено с платой · ${n} точек, потерь нет`; }
+  else if (syncing) { b.className = 'badge wait'; b.textContent = `Сверка с платой… ${Math.round(sync.prog * 100)}%`; }
+  else { b.className = 'badge live'; b.textContent = n ? `Только прямой эфир · пропущено ${lost} из ${n} точек` : 'Данные ещё не получены с платы'; }
+  $('dSync').hidden = !(r.status !== 'verified' && app.connected && r.uid === app.uid && !syncing);
+  $('dApo').textContent = n || r.apogeeCm ? `${num1(apoOf(r))} м` : '—';
+  $('dApoT').textContent = n && r.apogeeIdx > r.pre ? `${num1((r.apogeeIdx - r.pre) / r.rate)} с` : '—';
+  const d = durOf(r);
+  $('dDur').textContent = d != null ? `${num1(d)} с` : '—';
+  drawChart($('dChart'), r.samples, r.rate, r.pre, r.apogeeIdx, 4);
+}
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function logItem(r) {
+  const b = el('button', 'item');
+  const l = el('div', 'l'), rt = el('div', 'r');
+  l.append(el('div', 't', `Запуск №${r.num}`));
+  const meta = [dateStr(r), r.bottle && `${r.bottle} л`, r.pressure && `${r.pressure} бар`, r.water && `${r.water} мл`].filter(Boolean).join(' · ');
+  l.append(el('div', 'm', meta));
+  l.append(el('div', 'c', r.comment || 'без комментария'));
+  rt.append(el('span', 'a', `${num1(apoOf(r))} м`));
+  rt.append(r.status === 'verified' ? el('span', 's ok', '✓ сверено') : el('span', 's live', 'только эфир'));
+  b.append(l, rt);
+  b.onclick = () => openDetail(r.key);
+  return b;
+}
+
+function refreshLog() {
+  if (!store.db || app.logVer === store.ver) return;
+  app.logVer = store.ver;
+  store.all().then(a => {
+    app.logCache = a.filter(r => !r.deleted).sort((x, y) => y.num - x.num);
+    scheduleRender();
+  });
+}
+
+function renderLog() {
+  const list = app.logCache;
+  $('logEmpty').hidden = list.length > 0;
+  $('recCard').hidden = !list.length;
+  if (list.length) {
+    const best = list.reduce((a, b) => apoOf(b) > apoOf(a) ? b : a);
+    $('recVal').textContent = num1(apoOf(best));
+    $('recMeta').textContent = [`запуск №${best.num}`, best.bottle && `${best.bottle} л`, best.pressure && `${best.pressure} бар`].filter(Boolean).join(' · ');
+  }
+  $('btnBoardAll').disabled = !app.connected || $('btnBoardAll').dataset.busy === '1';
+  $('boardInfo').textContent = !app.connected
+    ? 'Плата хранит последние 100 запусков. Подключите её, чтобы загрузить записи.'
+    : sync.cur != null ? `Загрузка записи с платы… ${Math.round(sync.prog * 100)}%, в очереди ${sync.queue.length}`
+    : `На плате ${app.boardCount ?? '…'} из 100 записей. Можно загрузить все, включая удалённые из журнала.`;
+  if (app.logRendered === list) return;
+  app.logRendered = list;
+  $('logList').replaceChildren(...list.map(logItem));
+}
+
+/* ---------- Карточка запуска ---------- */
+function openDetail(key) {
+  app.detailKey = key; app.detailRec = null;
+  store.get(key).then(r => {
+    if (app.detailKey !== key || !r) return;
+    app.detailRec = r; fillForm(r); scheduleRender();
+  });
+  window.scrollTo(0, 0);
+  scheduleRender();
+}
+function closeDetail() { app.detailKey = null; app.detailRec = null; scheduleRender(); }
+
+function fillForm(r) {
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.b === r.bottle)));
+  $('fP').value = r.pressure || '';
+  $('fW').value = r.water || '';
+  $('fC').value = r.comment || '';
+}
+
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+  const on = c.getAttribute('aria-pressed') !== 'true';
+  document.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+  c.setAttribute('aria-pressed', String(on));
+});
+
+$('dSave').onclick = async () => {
+  const r = app.detailRec; if (!r) return;
+  const chip = document.querySelector('.chip[aria-pressed=true]');
+  r.bottle = chip ? chip.dataset.b : '';
+  r.pressure = $('fP').value.trim();
+  r.water = $('fW').value.trim();
+  r.comment = $('fC').value.trim();
+  await store.put(r);
+  toast('Сохранено');
+};
+$('dBack').onclick = closeDetail;
+$('dSync').onclick = () => { const r = app.detailRec; if (r) { sync.tries[r.id] = 0; sync.add(r.id); } };
+$('dCsv').onclick = () => { const r = app.detailRec; if (r) download(`zapusk_${r.num}.csv`, flightCsv(r), 'text/csv'); };
+$('dDel').onclick = async () => {
+  const r = app.detailRec; if (!r) return;
+  if (!confirm(`Удалить запуск №${r.num} из журнала?`)) return;
+  r.deleted = true;
+  await store.put(r);
+  app.tab = 'log'; closeDetail();
+  toast('Запуск удалён');
+};
+
+/* ---------- Экспорт и резервная копия ---------- */
+const dec = (x, d = 2) => x.toFixed(d).replace('.', ',');
+const csvCell = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+
+function flightCsv(r) {
+  const f = r.date ? fmtDate(r.date) : { date: 'дата неизвестна', time: '' };
+  const rows = [`Запуск №${r.num};${f.date};${f.time}`, 'время, с;высота, м'];
+  r.samples.forEach((v, i) => rows.push(`${dec((i - r.pre) / r.rate)};${v == null ? '' : dec(v / 100)}`));
+  return '\uFEFF' + rows.join('\r\n');
+}
+function journalCsv() {
+  const rows = ['№;дата;время;апогей, м;до апогея, с;полёт, с;бутылка, л;давление, бар;вода, мл;комментарий;данные'];
+  for (const r of app.logCache.slice().reverse()) {
+    const d = durOf(r);
+    const f = r.date ? fmtDate(r.date) : { date: '', time: '' };
+    rows.push([r.num, f.date, f.time, dec(apoOf(r), 1),
+      r.apogeeIdx > r.pre ? dec((r.apogeeIdx - r.pre) / r.rate, 1) : '',
+      d != null ? dec(d, 1) : '', r.bottle, r.pressure, r.water, r.comment,
+      r.status === 'verified' ? 'сверено' : 'только эфир'].map(csvCell).join(';'));
+  }
+  return '\uFEFF' + rows.join('\r\n');
+}
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+$('btnCsvAll').onclick = () => download('zhurnal_zapuskov.csv', journalCsv(), 'text/csv');
+$('btnBackup').onclick = async () => {
+  const all = await store.all();
+  const day = new Date().toISOString().slice(0, 10);
+  download(`rocket_backup_${day}.json`, JSON.stringify({ app: 'rocket-altimeter', v: 1, flights: all }), 'application/json');
+};
+$('btnRestore').onclick = () => $('fileRestore').click();
+$('fileRestore').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== 'rocket-altimeter' || !Array.isArray(data.flights)) throw new Error('не тот файл');
+    let added = 0, maxNum = 0;
+    for (const r of data.flights) {
+      if (!r || !r.key) continue;
+      const cur = await store.get(r.key);
+      if (cur && cur.status === 'verified' && r.status !== 'verified') continue;
+      await store.put(r); added++;
+      maxNum = Math.max(maxNum, r.num || 0);
+    }
+    await store.setNumberAtLeast(maxNum);
+    toast(`Восстановлено запусков: ${added}`);
+  } catch (err) { toast('Не удалось прочитать файл копии'); }
+};
+
+/* ---------- Кнопки ---------- */
+/* Кнопка-предохранитель: удерживать 3 секунды, сработает при отпускании.
+   Срабатывание на отпускании нужно ещё и потому, что Chrome разрешает
+   открыть окно выбора Bluetooth только сразу после действия пользователя. */
+function holdButton(btn, action, ms = 3000) {
+  let t0 = 0, armed = false, raf = 0;
+  const lbl = btn.querySelector('.lbl');
+  btn.dataset.label = lbl.textContent;
+  const tick = () => {
+    if (!t0) return;
+    const p = Math.min(1, (performance.now() - t0) / ms);
+    btn.style.setProperty('--p', p);
+    if (p >= 1 && !armed) { armed = true; vibrate(40); lbl.textContent = 'Отпустите'; }
+    raf = requestAnimationFrame(tick);
+  };
+  const start = () => {
+    if (btn.disabled || t0) return;
+    t0 = performance.now(); armed = false; btn.dataset.holding = '1'; tick();
+  };
+  const stop = fire => {
+    if (!t0) return;
+    cancelAnimationFrame(raf);
+    const ok = armed && fire, short = fire && !armed;
+    t0 = 0; armed = false; delete btn.dataset.holding;
+    btn.style.setProperty('--p', 0);
+    lbl.textContent = btn.dataset.label;
+    if (ok) action();
+    else if (short) toast('Удерживайте кнопку 3 секунды');
+  };
+  btn.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    try { btn.setPointerCapture(e.pointerId); } catch (x) {}
+    start();
+  });
+  btn.addEventListener('pointerup', () => stop(true));
+  btn.addEventListener('pointercancel', () => stop(false));
+  btn.addEventListener('lostpointercapture', () => stop(false));
+  btn.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); start(); } });
+  btn.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); stop(true); } });
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+  btn.addEventListener('click', e => e.preventDefault());
+}
+
+holdButton($('btnLink'), () => {
+  if (app.connected || app.linkState === 'retry') { if (link) link.close(); return; }
+  link = new BleLink();
+  link.connect().catch(e => { if (e.name !== 'NotFoundError') toast('Не удалось подключиться: ' + e.message); });
+});
+
+holdButton($('btnCal'), async () => {
+  const b = $('btnCal');
+  b.dataset.busy = '1'; b.disabled = true; setHoldLabel(b, 'Калибровка… не двигайте ракету');
+  try {
+    const p = await cmd.request('C', p => p[0] === 'CAL' || (p[0] === 'ERR' && p[2] === 'C'), 6000);
+    toast(p[0] === 'CAL' ? 'Готово: текущая высота принята за ноль' : 'Нельзя калибровать во время полёта');
+  } catch (e) { toast('Калибровка не удалась, повторите'); }
+  b.dataset.busy = ''; setHoldLabel(b, 'Откалибровать'); scheduleRender();
+});
+
+$('btnDemo').onclick = async () => { link = new DemoLink(); await link.connect(); toast('Демо-режим: данные ненастоящие'); };
+$('btnDemoLaunch').onclick = () => { if (isDemo()) link.launch(); };
+$('btnBoardAll').onclick = async () => {
+  const b = $('btnBoardAll');
+  if (!app.connected) return;
+  b.dataset.busy = '1'; b.disabled = true;
+  try {
+    const q = await importBoardItems(await fetchBoardList(), true);
+    toast(q ? `Загружаю с платы записей: ${q}` : 'Все записи платы уже в журнале');
+  } catch (e) { toast('Плата не ответила, повторите'); }
+  b.dataset.busy = ''; scheduleRender();
+};
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  app.tab = t.dataset.tab; app.detailKey = null; app.detailRec = null; scheduleRender();
+});
+
+let toastTimer = null;
+function toast(text) {
+  const t = $('toast');
+  t.textContent = text; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+setInterval(() => { if (app.connected) scheduleRender(); }, 1000);
+store.open().then(scheduleRender).catch(() => toast('Журнал недоступен: браузер запретил хранилище'));
+scheduleRender();
+</script>
+</body>
+</html>
